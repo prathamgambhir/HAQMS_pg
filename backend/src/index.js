@@ -16,7 +16,35 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for all origins (weak/broad CORS config)
-app.use(cors());
+
+// trusted production frontend domains
+const whitelist = ['https://yourdomain.com', 'https://yourdomain.com'];
+
+// CORS options
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, or same-origin requests)
+    if (!origin) return callback(null, true);
+    
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Restrict verbs
+  allowedHeaders: ['Content-Type', 'Authorization'], // Restrict headers
+  credentials: true, // Required for cookies, authorization headers, or TLS client certificates
+  // optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+// Different for local and production
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors(corsOptions));
+} else {
+  // Allow all origins in local development
+  app.use(cors()); 
+}
 
 // Body parser
 app.use(express.json());
@@ -49,11 +77,16 @@ app.get('/', (req, res) => {
 // which leaks details about database types, schema layout, and file paths.
 app.use((err, req, res, next) => {
   console.error('[CRITICAL-ERROR]:', err);
-  res.status(500).json({
+  const errorResponse = {
     message: 'An unexpected internal server error occurred!',
-    error: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  });
+  };
+
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.error = err.message;
+    errorResponse.stack = err.stack;
+  }
+
+  res.status(500).json(errorResponse);
 });
 
 // Listen on port

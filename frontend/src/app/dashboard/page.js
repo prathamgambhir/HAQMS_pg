@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/common/Navbar';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, CalendarDays, Activity, Search, Sparkles, UserPlus, 
   Trash2, ClipboardList, TrendingUp, DollarSign, Award, Clock,
@@ -128,6 +129,20 @@ export default function Dashboard() {
     // leading to database pollution (e.g. text telephone values)
     if (!regName || !regPhone || !regAge) {
       setRegMessage('Error: Name, Age and Phone number are required.');
+      return;
+    }
+
+    // Client-side phone format validation matching backend regex
+    const phoneRegex = /^[0-9+\-\s()]{7,20}$/;
+    if (!phoneRegex.test(String(regPhone))) {
+      setRegMessage('Error: Phone number format is invalid. Must be 7 to 20 digits.');
+      return;
+    }
+
+    // Client-side age validation matching backend bounds (1 to 120)
+    const parsedAge = parseInt(regAge, 10);
+    if (Number.isNaN(parsedAge) || parsedAge <= 0 || parsedAge > 120) {
+      setRegMessage('Error: Age must be a valid number between 1 and 120.');
       return;
     }
 
@@ -371,18 +386,18 @@ export default function Dashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-8">
         
         {/* Navigation Tabs based on Role */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto gap-4">
+        <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-8 overflow-x-auto gap-4">
           {user.role === 'ADMIN' && (
             <>
               <button
                 onClick={() => setActiveTab('reports')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'reports' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'reports' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 System Audit Reports
               </button>
               <button
                 onClick={() => setActiveTab('physicians')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'physicians' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'physicians' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 Physician Registry
               </button>
@@ -393,13 +408,13 @@ export default function Dashboard() {
             <>
               <button
                 onClick={() => setActiveTab('patients')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'patients' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'patients' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 Patient Registry Directory
               </button>
               <button
                 onClick={() => setActiveTab('book')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'book' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'book' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 Scheduling / Check-in Portal
               </button>
@@ -410,13 +425,13 @@ export default function Dashboard() {
             <>
               <button
                 onClick={() => setActiveTab('appointments')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'appointments' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'appointments' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 My Scheduled Bookings
               </button>
               <button
                 onClick={() => setActiveTab('queue')}
-                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'queue' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-400'}`}
+                className={`py-3.5 px-1 border-b-2 font-bold text-sm transition-all whitespace-nowrap cursor-pointer ${activeTab === 'queue' ? 'border-neutral-900 text-neutral-950 dark:border-neutral-100 dark:text-neutral-100' : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
               >
                 Active Calling Queue
               </button>
@@ -426,9 +441,9 @@ export default function Dashboard() {
 
         {/* Global Notifications Panel */}
         {checkinMessage && (
-          <div className="p-4 mb-6 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-between text-sm">
+          <div className="p-4 mb-6 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 flex items-center justify-between text-sm">
             <span>{checkinMessage}</span>
-            <button onClick={() => setCheckinMessage('')} className="font-bold underline text-xs">Dismiss</button>
+            <button onClick={() => setCheckinMessage('')} className="font-bold underline text-xs cursor-pointer">Dismiss</button>
           </div>
         )}
 
@@ -796,9 +811,9 @@ export default function Dashboard() {
             ============================================================== */}
         {activeTab === 'appointments' && (
           <div className="space-y-6">
-            <div className="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md">
-              <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-                <CalendarDays className="h-5 w-5 text-teal-600" />
+            <div className="glass p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-md">
+              <h3 className="text-lg font-extrabold text-neutral-800 dark:text-neutral-100 flex items-center gap-2 mb-4">
+                <CalendarDays className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
                 Scheduled Daily Bookings List
               </h3>
 
@@ -825,15 +840,15 @@ export default function Dashboard() {
                           <td className="py-3.5">
                             <button
                               onClick={() => setSelectedPatientHistory(app.patient)}
-                              className="font-bold text-teal-600 hover:underline hover:text-teal-700 transition-colors"
+                              className="font-bold text-neutral-850 dark:text-neutral-200 hover:underline hover:text-neutral-950 dark:hover:text-neutral-100 transition-colors cursor-pointer"
                             >
                               {app.patient ? app.patient.name : 'Unknown Patient'}
                             </button>
-                            <span className="block text-xxs text-slate-400 mt-0.5">Age: {app.patient?.age}</span>
+                            <span className="block text-xxs text-neutral-450 mt-0.5">Age: {app.patient?.age}</span>
                           </td>
-                          <td className="py-3.5 text-slate-500 dark:text-slate-400 font-semibold">{app.reason || 'None provided'}</td>
+                          <td className="py-3.5 text-slate-550 dark:text-slate-400 font-semibold">{app.reason || 'None provided'}</td>
                           <td className="py-3.5">
-                            <span className={`inline-flex px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase ${app.status === 'COMPLETED' ? 'bg-teal-500/10 text-teal-600' : app.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase ${app.status === 'COMPLETED' ? 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-205 border border-neutral-300 dark:border-neutral-700' : app.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
                               {app.status}
                             </span>
                           </td>
@@ -845,13 +860,13 @@ export default function Dashboard() {
                                     const matchedDoc = doctorsList.find(d => d.userId === user.id);
                                     handleQueueCheckin(app.patientId, matchedDoc.id, app.id);
                                   }}
-                                  className="text-xxs px-2.5 py-1 rounded bg-teal-500/10 text-teal-600 dark:text-teal-400 font-extrabold hover:bg-teal-500 hover:text-white transition-colors"
+                                  className="text-xxs px-2.5 py-1 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-extrabold hover:bg-neutral-900 dark:hover:bg-neutral-100 hover:text-white dark:hover:text-neutral-900 transition-colors cursor-pointer"
                                 >
                                   Check In Patient
                                 </button>
                                 <button
                                   onClick={() => handleCompleteAppointment(app.id)}
-                                  className="text-xxs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold hover:bg-teal-500 hover:text-white transition-colors"
+                                  className="text-xxs px-2.5 py-1 rounded bg-neutral-150 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-extrabold hover:bg-neutral-900 dark:hover:bg-neutral-100 hover:text-white dark:hover:text-neutral-900 transition-colors cursor-pointer"
                                 >
                                   Complete
                                 </button>
@@ -893,8 +908,8 @@ export default function Dashboard() {
                       Assuming medicalHistory is always populated. Accesses a method on a nullable property
                       without optional chaining! If medicalHistory is null (which is the case for Batman, Clark Kent, etc.),
                       this code throws: "Cannot read properties of null (reading 'toUpperCase')" and crashes the app! */}
-                  <p className="text-slate-700 dark:text-slate-300 leading-5 text-sm font-semibold">
-                    {selectedPatientHistory.medicalHistory.toUpperCase()}
+                  <p className="text-neutral-750 dark:text-neutral-300 leading-5 text-sm font-semibold">
+                    {selectedPatientHistory.medicalHistory ? selectedPatientHistory.medicalHistory.toUpperCase() : 'NO MEDICAL HISTORY RECORDED'}
                   </p>
                 </div>
 
@@ -902,7 +917,7 @@ export default function Dashboard() {
                   {/* Incomplete Missing Route trigger -> will route to 404 page! */}
                   <Link 
                     href={`/patients/${selectedPatientHistory.id}/history-records`} 
-                    className="text-teal-600 font-extrabold hover:underline flex items-center gap-1"
+                    className="text-neutral-900 dark:text-neutral-100 font-extrabold hover:underline flex items-center gap-1"
                   >
                     View Diagnostic Reports Details (Legacy App)
                     <ArrowRight className="h-3 w-3" />
@@ -917,9 +932,9 @@ export default function Dashboard() {
             TAB: DOCTOR ACTIVE CALLING QUEUE (DOCTOR ROLE)
             ============================================================== */}
         {activeTab === 'queue' && (
-          <div className="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md">
-            <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-teal-600" />
+          <div className="glass p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-md">
+            <h3 className="text-lg font-extrabold text-neutral-850 dark:text-neutral-100 flex items-center gap-2 mb-4">
+              <Clock className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
               Active Operations Queue Controller
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 font-semibold">
@@ -933,17 +948,17 @@ export default function Dashboard() {
                 {doctorQueue.map((t) => (
                   <div
                     key={t.id}
-                    className={`p-5 rounded-2xl border shadow-md relative overflow-hidden flex flex-col justify-between ${t.status === 'CALLING' ? 'border-teal-500 bg-teal-500/10' : 'border-slate-200 dark:border-slate-800 bg-slate-500/5'}`}
+                    className={`p-5 rounded-2xl border shadow-md relative overflow-hidden flex flex-col justify-between ${t.status === 'CALLING' ? 'border-neutral-900 bg-neutral-100 dark:bg-neutral-800 dark:border-neutral-600' : 'border-neutral-205 dark:border-neutral-800 bg-slate-500/5'}`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className="text-2xl font-black text-slate-800 dark:text-slate-100">Token #{t.tokenNumber}</span>
-                      <span className={`px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase ${t.status === 'CALLING' ? 'bg-teal-500 text-white' : t.status === 'COMPLETED' ? 'bg-teal-500/10 text-teal-600' : 'bg-amber-500/10 text-amber-500'}`}>
+                      <span className="text-2xl font-black text-neutral-850 dark:text-neutral-100">Token #{t.tokenNumber}</span>
+                      <span className={`px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase ${t.status === 'CALLING' ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950' : t.status === 'COMPLETED' ? 'bg-neutral-105 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-250 dark:border-neutral-700' : 'bg-amber-500/10 text-amber-500'}`}>
                         {t.status}
                       </span>
                     </div>
 
                     <div className="mt-4">
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.patient.name}</h4>
+                      <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">{t.patient.name}</h4>
                       <p className="text-xxs text-slate-400 mt-0.5">Contact: {t.patient.phoneNumber}</p>
                     </div>
 
@@ -951,7 +966,7 @@ export default function Dashboard() {
                       {t.status === 'WAITING' && (
                         <button
                           onClick={() => handleUpdateQueueStatus(t.id, 'CALLING')}
-                          className="flex-1 py-1.5 bg-teal-600 text-white font-bold text-xxs rounded hover:bg-teal-700 transition-colors"
+                          className="flex-1 py-1.5 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950 font-bold text-xxs rounded hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
                         >
                           Call Patient
                         </button>
@@ -960,13 +975,13 @@ export default function Dashboard() {
                         <>
                           <button
                             onClick={() => handleUpdateQueueStatus(t.id, 'COMPLETED')}
-                            className="flex-1 py-1.5 bg-teal-600 text-white font-bold text-xxs rounded hover:bg-teal-700 transition-colors"
+                            className="flex-1 py-1.5 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950 font-bold text-xxs rounded hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
                           >
                             Consulted
                           </button>
                           <button
                             onClick={() => handleUpdateQueueStatus(t.id, 'SKIPPED')}
-                            className="flex-1 py-1.5 bg-rose-500/10 text-rose-500 font-bold text-xxs rounded hover:bg-rose-500 hover:text-white transition-colors"
+                            className="flex-1 py-1.5 bg-rose-500/10 text-rose-500 font-bold text-xxs rounded hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
                           >
                             Skip / No Show
                           </button>
@@ -985,11 +1000,11 @@ export default function Dashboard() {
             ============================================================== */}
         {activeTab === 'reports' && (
           <div className="space-y-8">
-            <div className="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md">
+            <div className="glass p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-md">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-teal-600" />
+                  <h3 className="text-lg font-extrabold text-neutral-800 dark:text-neutral-100 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
                     Doctor Revenue & Operations Report
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
@@ -999,7 +1014,7 @@ export default function Dashboard() {
                 <button
                   onClick={generateSystemReport}
                   disabled={adminReportLoading}
-                  className="glow-btn px-4 py-2 bg-teal-600 text-white font-extrabold text-xs rounded-lg shadow hover:bg-teal-700 disabled:opacity-50 transition-colors"
+                  className="glow-btn px-4 py-2 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200 font-extrabold text-xs rounded-lg shadow disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {adminReportLoading ? 'Aggregating...' : 'Load Doctor System Audit Report'}
                 </button>
@@ -1043,9 +1058,9 @@ export default function Dashboard() {
                         {adminReportData.data.reduce((sum, item) => sum + item.totalAppointments, 0)}
                       </h4>
                     </div>
-                    <div className="p-4 bg-slate-500/5 border border-slate-200 dark:border-slate-800 rounded-xl">
+                    <div className="p-4 bg-slate-500/5 border border-neutral-200 dark:border-neutral-800 rounded-xl">
                       <span className="text-xxs uppercase tracking-wider text-slate-400 font-bold">Total Sales ($)</span>
-                      <h4 className="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1">
+                      <h4 className="text-2xl font-black text-neutral-800 dark:text-neutral-100 mt-1">
                         ${adminReportData.data.reduce((sum, item) => sum + item.revenue, 0)}
                       </h4>
                     </div>
@@ -1053,9 +1068,9 @@ export default function Dashboard() {
 
                   {/* Table representation */}
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm text-left">
+                    <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800 text-sm text-left">
                       <thead>
-                        <tr className="text-slate-400 uppercase tracking-widest text-xxs font-bold border-b border-slate-200 dark:border-slate-800">
+                        <tr className="text-slate-400 uppercase tracking-widest text-xxs font-bold border-b border-neutral-200 dark:border-neutral-800">
                           <th className="pb-3">Doctor</th>
                           <th className="pb-3">Department</th>
                           <th className="pb-3 text-center">Consultations</th>
@@ -1063,19 +1078,19 @@ export default function Dashboard() {
                           <th className="pb-3 text-right">Revenue</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                         {adminReportData.data.map((item) => (
                           <tr key={item.id} className="hover:bg-slate-500/5 transition-colors">
-                            <td className="py-3.5 font-bold text-slate-800 dark:text-slate-200">
+                            <td className="py-3.5 font-bold text-neutral-800 dark:text-neutral-200">
                               {item.name}
-                              <span className="block text-xxs text-teal-600 dark:text-teal-400 font-semibold uppercase mt-0.5">{item.specialization}</span>
+                              <span className="block text-xxs text-neutral-500 dark:text-neutral-450 font-semibold uppercase mt-0.5">{item.specialization}</span>
                             </td>
                             <td className="py-3.5 text-slate-500 dark:text-slate-400">{item.department}</td>
                             <td className="py-3.5 text-center text-slate-500 dark:text-slate-400">
                               {item.completedAppointments} Completed / {item.totalAppointments} Total
                             </td>
-                            <td className="py-3.5 text-center font-bold text-slate-800 dark:text-slate-200">{item.todayQueueSize} in queue</td>
-                            <td className="py-3.5 text-right font-bold text-teal-600 dark:text-teal-400">${item.revenue}</td>
+                            <td className="py-3.5 text-center font-bold text-neutral-800 dark:text-neutral-200">{item.todayQueueSize} in queue</td>
+                            <td className="py-3.5 text-right font-bold text-neutral-800 dark:text-neutral-100">${item.revenue}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1091,10 +1106,10 @@ export default function Dashboard() {
             TAB: PHYSICIAN REGISTRY (ADMIN ROLE - SQL INJECTION VULNERABILITY)
             ============================================================== */}
         {activeTab === 'physicians' && (
-          <div className="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
+          <div className="glass p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-md space-y-6">
             <div>
-              <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <Award className="h-5 w-5 text-teal-600" />
+              <h3 className="text-lg font-extrabold text-neutral-800 dark:text-neutral-100 flex items-center gap-2">
+                <Award className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
                 Staff Physicians Registry Lookup
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
@@ -1112,13 +1127,13 @@ export default function Dashboard() {
                   value={adminSearchQuery}
                   onChange={(e) => setAdminSearchQuery(e.target.value)}
                   placeholder="Enter physician name search criteria (raw syntax supported)..."
-                  className="block w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                  className="block w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 bg-white/50 dark:bg-slate-900/50 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 dark:focus:ring-neutral-300 focus:border-transparent text-sm"
                 />
               </div>
 
               <button
                 onClick={searchPhysiciansAdmin}
-                className="glow-btn px-5 py-2 bg-slate-900 text-white dark:bg-teal-500 dark:text-slate-950 font-bold text-xs rounded-lg hover:bg-slate-800 dark:hover:bg-teal-400 transition-colors"
+                className="glow-btn px-5 py-2 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950 font-bold text-xs rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
               >
                 Execute SQL Query
               </button>
@@ -1140,18 +1155,18 @@ export default function Dashboard() {
               {doctorsList.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-500/5 flex flex-col justify-between"
+                  className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-slate-500/5 flex flex-col justify-between"
                 >
                   <div>
-                    <span className="inline-flex px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase bg-teal-500/10 text-teal-600 dark:text-teal-400 mb-2">
+                    <span className="inline-flex px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase bg-neutral-100 text-neutral-800 dark:text-neutral-200 border border-neutral-350 dark:border-neutral-700 mb-2">
                       {doc.department}
                     </span>
-                    <h4 className="font-extrabold text-slate-800 dark:text-slate-100">{doc.name}</h4>
+                    <h4 className="font-extrabold text-neutral-800 dark:text-neutral-100">{doc.name}</h4>
                     <p className="text-xs text-slate-400 mt-0.5">{doc.specialization}</p>
                   </div>
-                  <div className="mt-6 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex justify-between items-center text-xs font-semibold text-slate-500">
+                  <div className="mt-6 pt-3 border-t border-neutral-200 dark:border-neutral-800/80 flex justify-between items-center text-xs font-semibold text-slate-500">
                     <span>Exp: {doc.experience} yrs</span>
-                    <span className="font-bold text-teal-600 dark:text-teal-400">Fee: ${doc.consultationFee}</span>
+                    <span className="font-bold text-neutral-800 dark:text-neutral-200">Fee: ${doc.consultationFee}</span>
                   </div>
                 </div>
               ))}

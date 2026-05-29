@@ -13,50 +13,47 @@ router.get('/doctor-stats', authenticate, async (req, res) => {
   try {
     const start = Date.now();
 
-    // 1. Fetch all doctors
-    const doctors = await prisma.doctor.findMany();
-    const reportData = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); //sets time to midnight 12
 
-    // 2. Loop through every doctor and query databases sequentially!
-    for (const doc of doctors) {
-      console.log(`[SLOW REPORT] Querying stats sequentially for doctor: ${doc.name}`);
-
-      // Count total appointments
-      const totalAppointments = await prisma.appointment.count({
-        where: { doctorId: doc.id },
-      });
-
-      // Count completed appointments
-      const completedAppointments = await prisma.appointment.count({
-        where: { doctorId: doc.id, status: 'COMPLETED' },
-      });
-
-      // Count cancelled appointments
-      const cancelledAppointments = await prisma.appointment.count({
-        where: { doctorId: doc.id, status: 'CANCELLED' },
-      });
-
-      // Fetch queue tokens count today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const queueTokensCount = await prisma.queueToken.count({
-        where: {
-          doctorId: doc.id,
-          createdAt: { gte: today },
+    // 1. Fetch EVERYTHING we need in a single database query using Prisma aggregations
+    const doctorsWithStats = await prisma.doctor.findMany({
+      include: {
+        // Automatically count associated records at the database level
+        appointments: {
+          select: {
+            status: true,
+          },
         },
-      });
+        // Count tokens filtered by date constraint directly inside the database query
+        queueTokens: {
+          where: {
+            createdAt: { gte: today },
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
 
-      // Calculate total potential revenue
-      const appointmentsList = await prisma.appointment.findMany({
-        where: { doctorId: doc.id, status: 'COMPLETED' },
-      });
-      const revenue = appointmentsList.length * doc.consultationFee;
+    // 2. Format the retrieved database records into our clean output structure
+    const reportData = doctorsWithStats.map((doc) => {
+      // Filter out appointment subsets from our single pre-fetched in-memory array block
+      const totalAppointments = doc.appointments.length;
+      
+      const completedAppointments = doc.appointments.filter(
+        (app) => app.status === 'COMPLETED'
+      ).length;
+      
+      const cancelledAppointments = doc.appointments.filter(
+        (app) => app.status === 'CANCELLED'
+      ).length;
 
-      // Add artifical wait to simulate load under scaled database
-      // "Ensures database connection doesn't drop" - junior dev comment
-      await new Promise(r => setTimeout(r, 80));
+      // Calculate revenue directly using the total completed count
+      const revenue = completedAppointments * doc.consultationFee;
 
-      reportData.push({
+      return {
         id: doc.id,
         name: doc.name,
         specialization: doc.specialization,
@@ -64,10 +61,10 @@ router.get('/doctor-stats', authenticate, async (req, res) => {
         totalAppointments,
         completedAppointments,
         cancelledAppointments,
-        todayQueueSize: queueTokensCount,
+        todayQueueSize: doc.queueTokens.length,
         revenue,
-      });
-    }
+      };
+    });
 
     const durationMs = Date.now() - start;
 
