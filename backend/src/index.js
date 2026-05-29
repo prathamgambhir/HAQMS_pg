@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 // Enable CORS for all origins (weak/broad CORS config)
 
 // trusted production frontend domains
-const whitelist = ['https://yourdomain.com', 'https://yourdomain.com'];
+const whitelist = ['https://localhost:3000', 'https://yourdomain.com'];
 
 // CORS options
 const corsOptions = {
